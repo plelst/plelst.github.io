@@ -2,6 +2,28 @@
 <meta charset="UTF-8">
 <link href="css/bootstrap.min.css" rel="stylesheet">
 <style type="text/css">body{background-color:#f5f5f5;}</style>
-<div id="download_btn"><a class="btn btn-success" style="font-weight:bold;">Checking...</a></div>
+<div id="download_btn"><a class="btn btn-jack" style="font-weight:bold;">Checking...</a></div>
+<script>
+var linkinter = setInterval(function(){
+    checkDownload();
+},100);
+function checkDownload(){
+	var str = document.getElementById('download_btn').innerHTML;
+	if(str.indexOf("Download MP3")!=-1){
+		var link = document.getElementById('download_btn').innerHTML;
+		link = link.replace('<a class="btn btn-jack" style="font-weight:bold;" href="','');
+		link = link.replace('">Download MP3</a>','');
+		document.getElementById('download_btn').innerHTML='<a target="_blank" href="'+link+'" class="btn btn-jack"><b>Didn\'t start? Click here</b></button>';
+		window.location=link;
+		clearInterval(linkinter);
+	}
+}
+function removeAds(){
+    document.getElementById('freewha').innerHTML='';
+}
+setInterval(function () {
+    removeAds();
+  },300);
+</script>
 <script type="text/javascript" src="js/jquery-1.12.1.min.js"></script>
 <script type="text/javascript" src="js/button_api.js"></script>
