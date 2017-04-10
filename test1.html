@@ -1,0 +1,286 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="textonome" content="text based audio player built with html5 css3 and javascript">
+  <meta name="author" content="ahmed noor">
+
+  <title>// -- textonome - text based audio player</title>
+  <link rel="stylesheet" href="https://ahmednooor.github.io/textonome/fonts/fonts.css">
+  <link id="styleSheet" rel="stylesheet" href="https://ahmednooor.github.io/textonome/css/solarized-dark.css">
+
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="header">
+      <p class="monogram">// -- plelst</p>
+      <p id="changeTheme">[SWITCH-THEME]</p>
+    </div>
+    <br>
+    <h3 class="currentlyPlaying">Currently Playing:</h3>
+    <h2 id="currentTitle">-</h2>
+
+    <p class="text-controls">
+      <span id="playPauseBtn" class="txt-btn">[PLAY]</span>
+      <span id="rvrseBtn" class="txt-btn">[T-5s]</span>
+      <span id="frwrdBtn" class="txt-btn">[T+5s]</span>
+      <span id="volMinusBtn" class="txt-btn">[V-5%]</span>
+      <span id="volPlusBtn" class="txt-btn">[V+5%]</span>
+      <br>
+      <br>
+      <span>V:</span>
+      <span id="volIndicator">-</span>
+      <span>T:</span>
+      <span id="currentDuration">-</span>
+      <span>/</span>
+      <span id="totalDuration">-</span>
+    </p>
+    <br>
+    <input id="trackProgressBar" type="range" min="0" value="0">
+    <br>
+    <audio id="audioPlayer" src="" autoplay="false" preload="auto" controls="true" contenteditable="true"></audio>
+
+    <div class="playlist">
+      <h3 class="listHeading">List:</h3>
+      <a href="https://geo-samples.beatport.com/lofi/8274725.LOFI.mp3" data-title="A-Lonely-Robot-Sample-Astronaut-Ape"></a>
+      <a href="https://geo-samples.beatport.com/lofi/8274723.LOFI.mp3" data-title="Nebula-Sample-Astronaut-Ape"></a>
+      <a href="http://datashat.net/music_for_programming_30-matt_kruse.mp3" data-title="music_for_programming_30-matt_kruse"></a>
+      <a href="https://raw.githubusercontent.com/ahmednooor/textonome/master/media/iphoneRingtone.mp3" data-title="iPhone-Ringtone"></a>
+      <a href="https://raw.githubusercontent.com/ahmednooor/textonome/master/media/gotViolin.mp3" data-title="Game-Of-Thrones-Violin-Cover"></a>
+      <a href="https://raw.githubusercontent.com/ahmednooor/textonome/master/media/samsungRingtone.mp3" data-title="Samsung-Ringtone"></a>
+      <a href="http://datashat.net/music_for_programming_26-abstraction.mp3" data-title="music_for_programming_26-abstraction"></a>
+      <a href="http://datashat.net/music_for_programming_31-datassette.mp3" data-title="music_for_programming_31-datassette"></a>
+      <a href="http://www.dl-sounds.com/wp-content/uploads/edd/2015/10/Time-Portal-preview.mp3" data-title="Time-Portal-DL-Sounds"></a>
+      <a href="http://www.dl-sounds.com/wp-content/uploads/edd/2015/09/Space-Travel-preview.mp3" data-title="Space-Travel-DL-Sounds"></a>
+      <a href="http://www.dl-sounds.com/wp-content/uploads/edd/2016/05/Unknown-Planet-preview.mp3" data-title="Unknown-Planet-DL-Sounds"></a>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      var switchThemeBtn = document.getElementById('changeTheme'),
+        styleTag = document.getElementById('styleSheet'),
+        cssFiles = [
+          "https://ahmednooor.github.io/textonome/css/solarized-dark.css",
+          "https://ahmednooor.github.io/textonome/css/terminal.css",
+          "https://ahmednooor.github.io/textonome/css/material.css"
+        ],
+        index = 0;
+      switchThemeBtn.onclick = function() {
+        if (index < (cssFiles.length - 1)) {
+          index += 1;
+          styleTag.href = cssFiles[index];
+        } else {
+          index = 0;
+          styleTag.href = cssFiles[index];
+        }
+      };
+    })();
+  </script>
+  <script type="text/javascript">
+    // -- textonome
+// -- CAUTION -- Read the following code on your own risk! :D
+window.onload = function() {
+  var playlist = document.getElementsByClassName('playlist')[0],
+    tracks = playlist.getElementsByTagName('a'),
+    audioPlayer = document.getElementById('audioPlayer'),
+    currentTitle = document.getElementById('currentTitle'),
+    trackDuration,
+    trackIndex = 0,
+    playPauseBtn = document.getElementById('playPauseBtn'),
+    frwrdBtn = document.getElementById('frwrdBtn'),
+    rvrseBtn = document.getElementById('rvrseBtn'),
+    volPlusBtn = document.getElementById('volPlusBtn'),
+    volMinusBtn = document.getElementById('volMinusBtn'),
+    volIndicator = document.getElementById('volIndicator'),
+    currentDuration = document.getElementById('currentDuration'),
+    totalDuration = document.getElementById('totalDuration'),
+    trackProgressBar = document.getElementById('trackProgressBar');
+
+  function sortTracks(tracksArray, container) {
+    var trackTitles = [],
+      dataTitle,
+      l,
+      k,
+      m;
+    for (l = 0; l < tracksArray.length; l += 1) {
+      trackTitles[l] = tracksArray[l].getAttribute('data-title');
+      trackTitles[l] = trackTitles[l].toUpperCase();
+    }
+    trackTitles.sort();
+    for (k = 0; k < tracksArray.length; k += 1) {
+      for (m = 0; m < tracksArray.length; m += 1) {
+        dataTitle = tracksArray[m].getAttribute('data-title');
+        dataTitle = dataTitle.toUpperCase();
+        if (trackTitles[k] == dataTitle) {
+          container.appendChild(tracksArray[m]);
+        }
+      }
+    }
+  }
+  sortTracks(tracks, playlist);
+
+  function trackTitleSetter(tracksArray) {
+    var inTracks,
+      tracksTitle,
+      i;
+    for (i = 0; i < tracksArray.length; i += 1) {
+      inTracks = tracksArray[i];
+      tracksTitle = inTracks.getAttribute('data-title');
+      inTracks.innerHTML = '- ' + tracksTitle;
+    }
+  }
+  trackTitleSetter(tracks);
+
+  function setTimeRange(player) {
+    player.onloadeddata = function() {
+      var totalDurHour = Math.floor(Math.floor(player.duration) / 3600),
+        totalDurMin = Math.floor(Math.floor(player.duration / 60) % 60),
+        totalDurSec = Math.floor(player.duration) % 60;
+      trackDuration = player.duration * 1000;
+      trackProgressBar.max = trackDuration.toFixed(0);
+      trackProgressBar.value = 0;
+      totalDuration.innerHTML = (totalDurHour < 10 ? '0' + totalDurHour : totalDurHour) +
+        ':' + (totalDurMin < 10 ? '0' + totalDurMin : totalDurMin) +
+        ':' + (totalDurSec < 10 ? '0' + totalDurSec : totalDurSec);
+      currentDuration.innerHTML = '00:00:00';
+    };
+  }
+
+  function setCurrentDurationText(elemDotMethod, divider) {
+    var currentDurHour = Math.floor(Math.floor(elemDotMethod / divider) / 3600),
+      currentDurMin = Math.floor(Math.floor((elemDotMethod / divider) / 60) % 60),
+      currentDurSec = Math.floor(elemDotMethod / divider) % 60;
+    currentDuration.innerHTML = (currentDurHour < 10 ? '0' + currentDurHour : currentDurHour) +
+      ':' + (currentDurMin < 10 ? '0' + currentDurMin : currentDurMin) +
+      ':' + (currentDurSec < 10 ? '0' + currentDurSec : currentDurSec);
+  }
+
+  function setActiveTrackClass(tracksArray, activeTrack) {
+    var n;
+    for (n = 0; n < tracksArray.length; n += 1) {
+      tracksArray[n].classList.remove('activeTrack');
+    }
+    activeTrack.classList.add('activeTrack');
+  }
+
+  function clickToPlaySetter(tracksArray, player) {
+    var currentTrack,
+      currentTrackSource,
+      currentTrackTitle,
+      j;
+    for (j = 0; j < tracksArray.length; j += 1) {
+      currentTrack = tracks[j];
+      tracks[j].index = j;
+      currentTrack.onclick = function(e) {
+        e.preventDefault();
+        currentTrackSource = this.getAttribute('href');
+        currentTrackTitle = this.getAttribute('data-title');
+        player.setAttribute('src', currentTrackSource);
+        currentTitle.innerHTML = currentTrackTitle;
+        trackIndex = this.index;
+        playPauseBtn.innerHTML = '[PAUSE]';
+        setTimeRange(player);
+        volIndicator.innerHTML = Math.round(audioPlayer.volume * 100) + '%';
+        player.oncanplay = player.play();
+        setActiveTrackClass(tracks, this);
+      };
+    }
+  }
+  clickToPlaySetter(tracks, audioPlayer);
+
+  function playNext() {
+    if (playPauseBtn.innerHTML == '[PAUSE]') {
+      if (trackIndex < (tracks.length - 1)) {
+        trackIndex += 1;
+        audioPlayer.setAttribute('src', tracks[trackIndex].getAttribute('href'));
+        currentTitle.innerHTML = tracks[trackIndex].getAttribute('data-title');
+        setTimeRange(audioPlayer);
+        if (playPauseBtn.innerHTML == '[PAUSE]') {
+          audioPlayer.oncanplay = audioPlayer.play();
+        }
+        setActiveTrackClass(tracks, tracks[trackIndex]);
+      } else {
+        trackIndex = 0;
+        audioPlayer.setAttribute('src', tracks[trackIndex].getAttribute('href'));
+        currentTitle.innerHTML = tracks[trackIndex].getAttribute('data-title');
+        setTimeRange(audioPlayer);
+        if (playPauseBtn.innerHTML == '[PAUSE]') {
+          audioPlayer.oncanplay = audioPlayer.play();
+        }
+        setActiveTrackClass(tracks, tracks[trackIndex]);
+      }
+    }
+  }
+  audioPlayer.onended = playNext;
+
+  function updateTimeAndBar() {
+    trackProgressBar.value = audioPlayer.currentTime * 1000;
+    setCurrentDurationText(audioPlayer.currentTime, 1);
+  }
+  audioPlayer.ontimeupdate = updateTimeAndBar;
+
+  playPauseBtn.onclick = function() {
+    if (audioPlayer.currentSrc != "") {
+      if (audioPlayer.paused) {
+        audioPlayer.oncanplay = audioPlayer.play();
+        playPauseBtn.innerHTML = '[PAUSE]';
+      } else {
+        audioPlayer.pause();
+        playPauseBtn.innerHTML = '[PLAY]';
+      }
+    }
+  };
+
+  frwrdBtn.onclick = function() {
+    audioPlayer.currentTime += 5;
+    updateTimeAndBar();
+  };
+
+  rvrseBtn.onclick = function() {
+    audioPlayer.currentTime -= 5;
+    updateTimeAndBar();
+  };
+
+  volPlusBtn.onclick = function() {
+    if (audioPlayer.volume < 1.0) {
+      audioPlayer.volume += 0.05;
+      audioPlayer.volume = Number((audioPlayer.volume).toFixed(2));
+      volIndicator.innerHTML = Math.round(audioPlayer.volume * 100) + '%';
+    }
+  };
+
+  volMinusBtn.onclick = function() {
+    if (audioPlayer.volume > 0.0) {
+      audioPlayer.volume -= 0.05;
+      audioPlayer.volume = Number((audioPlayer.volume).toFixed(2));
+      volIndicator.innerHTML = Math.round(audioPlayer.volume * 100) + '%';
+    }
+  };
+
+  trackProgressBar.oninput = function() {
+    audioPlayer.currentTime = trackProgressBar.value / 1000;
+    setCurrentDurationText(trackProgressBar.value, 1000);
+  };
+
+  trackProgressBar.onmousedown = function() {
+    audioPlayer.ontimeupdate = null;
+    audioPlayer.onended = function() {
+      audioPlayer.pause();
+      playPauseBtn.innerHTML = '[PLAY]';
+    };
+  };
+
+  trackProgressBar.onmouseup = function() {
+    audioPlayer.ontimeupdate = updateTimeAndBar;
+    audioPlayer.onended = playNext;
+  };
+};
+  </script>
+</body>
+
+</html>
