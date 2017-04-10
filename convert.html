@@ -1,0 +1,34 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+<meta charset="UTF-8">
+<style type="text/css">#download_btn{visibility:hidden;}</style>
+<script type="text/javascript">
+var i = 1;
+window.onload = startInterval();
+function startInterval(){
+	setInterval("checkDownload();",100);
+}
+function checkDownload(){
+	if(i==1){
+		var str = document.getElementById('download_btn').innerHTML;
+		if(str.indexOf("<span>Download</span>")!==-1){
+			var link = document.getElementById('download_btn').innerHTML;
+			link = link.replace('<a href="','');
+			link = link.replace('" rel="nofollow">','');
+			link = link.replace('Download','');
+			link = link.replace('<b>','');
+			link = link.replace('</b>','');
+			link = link.replace('</a>','');
+			link = link.replace('<span>','');
+			link = link.replace('</span>','');
+			document.getElementById('download_link').innerHTML=link;
+			i++;
+		}
+	}
+}
+</script>
+<div id="download_link">Converting</div>
+<div id="download_btn">
+<a href="" rel="nofollow"><b><span>Checking</span></b></a>
+</div>
+<script type="text/javascript" src="https://ytapi.cc/js/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="https://ytapi.cc/js/button.js"></script>
