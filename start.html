@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Playlist!</title>
-<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/bootstrap.min.css" rel="stylesheet">
 <style>
 #sortable{list-style:none;margin-left:-40px}
-.trc{padding:6px;background-color:#f5f5f5;font-size:18px;border:1px #ccc solid;}
+.trc{padding:6px;background-color:#f5f5f5;font-size:15px;border:1px #ccc solid;}
 .trc a{text-decoration:none;color:#333;}
-.trc_{padding:6px;background-color:#0099cc;font-size:18px;border:1px #ccc solid;}
+.trc_{padding:6px;background-color:#0099cc;font-size:15px;border:1px #ccc solid;}
 .trc_ a{text-decoration:none;color:#fff;}
 .currPlayli{font-weight:bold;background-color:#337ab7;color:#fff;}
 .playPauseButton{font-size:36px;border:0px;background-color:transparent;color:#337ab7;}
@@ -65,146 +65,6 @@ $(document).ready(function(){
   });
   $("#sortable").disableSelection();
 });
-var x=1;
-function addTrack(trackName,para_){
-  if(x==1){
-  document.getElementById('xyz').style.display='block';
-  all_ids=[];
-  all_titles=[];
-  var selec_id;
-  var jx=0;
-  $.getJSON("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+trackName.replace('<!--separator-->','')+"&key=AIzaSyDl1Tb2O9pGblvvjiLv7JOfITpoQeS9daQ&type=video&videoCategoryId=10&maxResults=5", function(result){
-    while(result.items[jx].id.videoId){
-      all_ids.push(result.items[jx].id.videoId);
-      all_titles.push(result.items[jx].snippet.title);
-      selec_id=all_ids[0];
-      var lowert = all_titles[jx].toLowerCase();
-      if(lowert.indexOf('lyric')!==-1){
-        selec_id=all_ids[jx];
-        break;
-      }
-      jx++;
-    }
-  });
-  var interval2 = setInterval(function(){
-    if(selec_id){
-      var id = selec_id;
-      document.getElementById('frame_w_id').innerHTML='<iframe src="convert.html?v='+id+'" id="yt2mp3" height=0 width="100%" frameborder=0></iframe>';
-      var interval = setInterval(function(){
-        if(window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML.indexOf('http')==1){
-          document.getElementById('audio_panel').innerHTML = '<div style="float:right;top:12px;right:3px;"><table><td><div id="current_time_"></div></td><td><div id="duration_"></div></td></table></div><audio id="myaudio" src="'+window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML+'" onended="audioEnded();"></audio><canvas id="canvas2" height="48px"></canvas><canvas id="canvas" height="48px"></canvas><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="ppp.png" height="36px"></button></div>';
-          clearInterval(interval);
-          resizeCanvas();
-          initEvents();
-          playAudio();
-        }
-      },100);
-      document.getElementById('xyz').style.display='none';
-      clearInterval(interval2);
-    }
-  },100);}
-  if(x==1){
-    document.getElementById('sortable').innerHTML+='<li class="trc_" style="cursor:move;" id="s_'+x+'"><img src="mi.png"><a href="#" onclick="selectAudio(\''+trackName+'\','+x+')"><!--trackName-->'+trackName+'</a><span style="float:right"><a href="#" onclick="removeTrack('+x+')"><img src="x.png"></a></span></li>';
-  }else{
-    document.getElementById('sortable').innerHTML+='<li class="trc" style="cursor:move;" id="s_'+x+'"><img src="mi.png"><a href="#" onclick="selectAudio(\''+trackName+'\','+x+')"><!--trackName-->'+trackName+'</a><span style="float:right"><a href="#" onclick="removeTrack('+x+')"><img src="x.png"></a></span></li>';
-  }
-  x++;
-}
-function reOrder(){
-  if(sets){
-    window.sets_name = sets;
-    for(var i=0;i<sets.length;i++){
-      var temp = document.getElementById('s_'+sets[i]).innerHTML.replace('<img src="mi.png">','');
-      //sets_name[i]=document.getElementById('s_'+sets[i]).innerHTML;
-      var end_pt = temp.indexOf("<span style=");
-      temp = temp.substr(0,end_pt);
-      sets_name[i] = temp;
-    }
-    document.getElementById('xtreme').innerHTML=sets_name;
-  }
-}
-function removeTrack(num){
-  element = document.getElementById("s_"+num);
-  element.parentNode.removeChild(element);
-  var lis = document.getElementById("sortable").getElementsByTagName("li");
-  if(sets.length!=lis.length) setsRemError=1;
-  if(currTrack==num){
-    document.getElementById('xyz').style.display='block';
-    var listo = document.getElementById("sortable").getElementsByTagName("li");
-    if(listo[0].id){
-      var stringo = '';
-      var delim = '97pes16lpfm';
-      var commento = '<!--trackName-->';
-      var temp = document.getElementById(listo[0].id).innerHTML.replace('<img src="mi.png">','');
-      var start_pt = temp.indexOf('<!--trackName-->');
-      var end_pt = temp.indexOf("</a>");
-      temp = temp.substr(start_pt+commento.length,end_pt-start_pt-commento.length);
-      var trackSN = parseInt(listo[0].id.replace('s_',''));
-      selectAudio('\''+temp+'\'',trackSN);
-    }
-  }
-}
-var timeout = 1000;
-var timer;
-function completeQueryT(str) {
-  document.getElementById('sugg').innerHTML='<div class="well"><div style="margin-top:3px;margin-bottom:3px">&nbsp;<img src="frame_loader.gif" width="16px">&nbsp;Finding matches...</div></div>';
-  clearTimeout(timer);
-  timer = setTimeout(function() {
-    completeQuery(str);
-  }, timeout);
-}
-function completeQuery(str){
-  $.getJSON("http://ws.audioscrobbler.com/2.0/?method=track.search&track="+str+"&api_key=0017041e90dd503219cd302cac55510a&limit=9&format=json",function(result){
-    var ix=0;
-    document.getElementById('sugg').innerHTML='';
-    while(result.results.trackmatches.track[ix].name){
-      $('#sugg').append('<div style="margin-top:3px"></div><div class="well"><span style="float:right"><a class="btn btn-primary btn-sm" href="#" onclick="addTrack(\''+result.results.trackmatches.track[ix].name.replace("'","").replace("&","and").replace('"','')+' <!--separator-->'+result.results.trackmatches.track[ix].artist.replace("'","").replace("&","and").replace('"','')+'\',\''+x+'\')"><b>Add</b></a></span><b>'+result.results.trackmatches.track[ix].name.replace("'","").replace("&","and").replace('"','')+'</b><br>'+result.results.trackmatches.track[ix].artist.replace("'","").replace("&","and").replace('"','')+'</div>');
-      ix++;
-    }
-    document.getElementById('sugg').innerHTML+='<div style="margin-top:3px"></div><div class="well"><span style="float:right"><a class="btn btn-primary btn-sm" href="#" onclick="addTrack(\''+str.replace("'","").replace("&","and").replace('"','')+'\',\'Unknown\',\''+x+'\')"><b>Add</b></a></span><b>'+str+'</b><br>Unknown</div><div style="margin-top:3px"></div>';
-  });
-}
-function startPlaying(){
-  var stringo = '';
-  var delim = '97pes16lpfm';
-  var commento = '<!--trackName-->';
-  if(!setsRemError){
-    if(sets){
-      var sets_name = sets;
-      for(var i=0;i<sets.length;i++){
-        var temp = document.getElementById('s_'+sets[i]).innerHTML.replace('<img src="mi.png">','');
-        var start_pt = temp.indexOf('<!--trackName-->');
-        var end_pt = temp.indexOf("</a>");
-        temp = temp.substr(start_pt+commento.length,end_pt-start_pt-commento.length);
-        sets_name[i] = temp;
-      }
-      for(var i=0;i<sets.length;i++){
-        stringo=stringo.concat(sets_name[i]+delim);
-      }
-      window.location="home.php?data="+stringo+"&playlistTitle="+playlistTitle+"&playlistDesc="+playlistDesc;
-    }else{
-      var lis = document.getElementById("sortable").getElementsByTagName("li");
-      for(var i=0;i<lis.length;i++){
-        var temp = document.getElementById(lis[i].id).innerHTML.replace('<img src="mi.png">','');
-        var start_pt = temp.indexOf('<!--trackName-->');
-        var end_pt = temp.indexOf("</a>");
-        temp = temp.substr(start_pt+commento.length,end_pt-start_pt-commento.length);
-        stringo=stringo.concat(temp+delim);
-      }
-      window.location="home.php?data="+stringo+"&playlistTitle="+playlistTitle+"&playlistDesc="+playlistDesc;
-    }
-  }else{
-    var lis = document.getElementById("sortable").getElementsByTagName("li");
-    for(var i=0;i<lis.length;i++){
-      var temp = document.getElementById(lis[i].id).innerHTML.replace('<img src="mi.png">','');
-      var start_pt = temp.indexOf('<!--trackName-->');
-      var end_pt = temp.indexOf("</a>");
-      temp = temp.substr(start_pt+commento.length,end_pt-start_pt-commento.length);
-      stringo=stringo.concat(temp+delim);
-    }
-    window.location="home.php?data="+stringo+"&playlistTitle="+playlistTitle+"&playlistDesc="+playlistDesc;
-  }
-}
 var zxcv=1;
 function audioEnded(){
   var temp;
@@ -223,11 +83,13 @@ function audioEnded(){
     }zxcv++;
   }
   document.getElementById('s_'+currTrack).className="trc_";
-  temp = document.getElementById('s_'+currTrack).innerHTML.replace('<img src="mi.png">','');
-  temp = temp.replace('<!--separator-->','');
+  //alert(document.getElementById('s_'+currTrack).innerHTML);
+  temp = document.getElementById('s_'+currTrack).innerHTML.replace('<b>','').replace('</b>','');
+  temp = temp.replace('<br>',' ');
   var start_pt = temp.indexOf('<!--trackName-->');
   var end_pt = temp.indexOf("</a>");
   temp = temp.substr(start_pt+commento.length,end_pt-start_pt-commento.length);
+  alert(temp);
   document.getElementById('xyz').style.display='block';
   selectAudio(temp,currTrack);
 }
@@ -263,7 +125,7 @@ function selectAudio(audio_name,audio_sn){
       document.getElementById('frame_w_id').innerHTML='<iframe src="convert.html?v='+id+'" id="yt2mp3" height=0 width="100%" frameborder=0></iframe>';
       var interval = setInterval(function(){
         if(window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML.indexOf('http')==1){
-          document.getElementById('audio_panel').innerHTML = '<div style="float:right;top:12px;right:3px;"><table><td><div id="current_time_"></div></td><td><div id="duration_"></div></td></table></div><audio id="myaudio" src="'+window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML+'" onended="audioEnded();"></audio><canvas id="canvas2" height="48px"></canvas><canvas id="canvas" height="48px"></canvas><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="ppp.png" height="36px"></button></div>';
+          document.getElementById('audio_panel').innerHTML = '<div style="float:right;top:12px;right:3px;"><table><td><div id="current_time_"></div></td><td><div id="duration_"></div></td></table></div><audio id="myaudio" src="'+window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML+'" onended="audioEnded();"></audio><canvas id="canvas2" height="48px"></canvas><canvas id="canvas" height="48px"></canvas><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="../ppp.png" height="36px"></button></div>';
           clearInterval(interval);
           resizeCanvas();
           initEvents();
@@ -309,11 +171,11 @@ function bufferBar() {
 }
 function playAudio(){
   document.getElementById('myaudio').play();
-  document.getElementById('playpause').innerHTML='<button class="btnpp" onclick="pauseAudio();"><img src="ppp.png" height="36px"></button>';
+  document.getElementById('playpause').innerHTML='<button class="btnpp" onclick="pauseAudio();"><img src="../ppp.png" height="36px"></button>';
 }
 function pauseAudio(){
   document.getElementById('myaudio').pause();
-  document.getElementById('playpause').innerHTML='<button class="btnpp" onclick="playAudio();"><img src="ppp2.png" height="36px"></button>';
+  document.getElementById('playpause').innerHTML='<button class="btnpp" onclick="playAudio();"><img src="../ppp2.png" height="36px"></button>';
 }
 function initEvents() {
   var canvas = document.getElementById('canvas');
@@ -348,22 +210,6 @@ function formatTime(time){
     seconds = seconds < 10 ? '0' + seconds : seconds;
     return minutes + ":" + seconds;
 }
-var playlistTitle='Playlist Title';
-var playlistDesc='Playlist Description';
-function editPlaylistTitle(){
-  document.getElementById('playlistTitle').innerHTML='<br><table><td><input type="text" id="editingPlaylistTitle" value="'+playlistTitle+'" class="form-control input-lg" autofocus></td><td><button class="btn btn-primary btn-lg" onclick="savePlaylistTitle();">Save</button></td></table><br>';
-}
-function savePlaylistTitle(){
-  playlistTitle=document.getElementById('editingPlaylistTitle').value;
-  document.getElementById('playlistTitle').innerHTML='<table><td><h2>'+playlistTitle+'</h2></td><td>&nbsp;<button onclick="editPlaylistTitle();" class="btn btn-primary btn-xs"><i class="glyphicon glyphicon-pencil"></i>&nbsp;Edit</button></td></table>';
-}
-function editPlaylistDesc(){
-  document.getElementById('playlistDesc').innerHTML='<table><td width="100%"><textarea class="form-control" id="editingPlaylistDesc" class="form-control">'+playlistDesc+'</textarea></td><td style="vertical-align:top"><button class="btn btn-primary btn-sm" onclick="savePlaylistDesc();">Save</button></td></table>';
-}
-function savePlaylistDesc(){
-  playlistDesc=document.getElementById('editingPlaylistDesc').value;
-  document.getElementById('playlistDesc').innerHTML='<table><td>'+playlistDesc+'</td><td>&nbsp;<button onclick="editPlaylistDesc();" class="btn btn-primary btn-xs"><i class="glyphicon glyphicon-pencil"></i>&nbsp;Edit</button></td></table>';
-}
 </script>
 </head>
 <body>
@@ -380,19 +226,22 @@ function savePlaylistDesc(){
 
 <div id="mainPlayer">
 <div id="audio_panel"></div>
-<div id="xyz"><center><img src="frame_loader.gif"></center></div>
+<div id="xyz"><center><img src="../frame_loader.gif"></center></div>
 <div id="getCommand"></div>
 </div>
-<ul id="sortable"></ul>
-<button class="btn btn-primary" onclick="startPlaying();">Create Playlist!</button>
+<ul id="sortable">
+<li class="trc" style="cursor:pointer;" id="s_1" onclick="selectAudio('Dragostea Ozone',1)"><a href="#"><!--trackName--><b>Dragostea</b><br>Ozone</a></li>
+<li class="trc" style="cursor:pointer;" id="s_2" onclick="selectAudio('Tubthumping',2)"><a href="#"><!--trackName--><b>Tubthumping</b><br>Chumbawamba</a></li>
+<li class="trc" style="cursor:pointer;" id="s_3" onclick="selectAudio('Gasolina',3)"><a href="#"><!--trackName--><b>Gasolina</b><br>Daddy Yankee</a></li>
+<li class="trc" style="cursor:pointer;" id="s_5" onclick="selectAudio('Comprendes Mendes',5)"><a href="#"><!--trackName--><b>Comprendes Mendes</b><br>Complete Machete</a></li>
+<li class="trc" style="cursor:pointer;" id="s_6" onclick="selectAudio('Qwerty',6)"><a href="#"><!--trackName--><b>Qwerty</b><br>Unknown</a></li>
+</ul>
 <div id="frame_w_id"></div>
 
 </div>
 
 <div class="col-md-5">
-<div style="margin-top:12px"></div>
-<input type="text" id="play" class="form-control input-lg" name="name" spellcheck="off" autocomplete="off" placeholder="Search for your songs here!" onkeyup="completeQueryT(this.value);" autofocus/>
-<div id="sugg"><center><img src="start.png"></center></div>
+
 </div>
 
 </div>
