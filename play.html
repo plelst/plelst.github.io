@@ -213,6 +213,7 @@ function audioEnded(){
   if(zxcv==1){
     for(var j=0;j<listo.length;j++){
       if(document.getElementById(listo[j].id).className=="trc_"){
+        document.getElementById('errorx').innerHTML+='trc_ found';
         if(j>=(listo.length-1)){
           currTrack=parseInt(listo[0].id.replace('s_',''));;
         }else{
@@ -223,12 +224,14 @@ function audioEnded(){
     }zxcv++;
   }
   document.getElementById('s_'+currTrack).className="trc_";
-  temp = document.getElementById('s_'+currTrack).innerHTML.replace('<img src="mi.png">','');
-  temp = temp.replace('<!--separator-->','');
+  document.getElementById('errorx').innerHTML+='<br>CT: '+currTrack;
+  temp = document.getElementById('s_'+currTrack).innerHTML.replace('<b>','').replace('</b>','');
+  temp = temp.replace('<br>',' ');
   var start_pt = temp.indexOf('<!--trackName-->');
   var end_pt = temp.indexOf("</a>");
   temp = temp.substr(start_pt+commento.length,end_pt-start_pt-commento.length);
   document.getElementById('xyz').style.display='block';
+  document.getElementById('errorx').innerHTML+='<br>'+temp;
   selectAudio(temp,currTrack);
 }
 function selectAudio(audio_name,audio_sn){
@@ -380,14 +383,15 @@ function savePlaylistDesc(){
 
 <div id="mainPlayer">
 <div id="audio_panel"></div>
+<div id="errorx"></div>
 <div id="xyz"><center><img src="frame_loader.gif"></center></div>
 <div id="getCommand"></div>
 </div>
 <ul id="sortable">
-<li class="trc" style="cursor:move;" id="s_1"><a href="#" onclick="selectAudio('Dragostea Ozone',1)"><b>Dragostea</b><br>Ozone</a><span style="float:right"><a href="#" onclick="removeTrack(1)"></a></span></li>
-<li class="trc" style="cursor:move;" id="s_2"><a href="#" onclick="selectAudio('Tubthumping',2)"><b>Tubthumping</b><br>Chumbawamba</a><span style="float:right"><a href="#" onclick="removeTrack(2)"></a></span></li>
-<li class="trc" style="cursor:move;" id="s_3"><a href="#" onclick="selectAudio('Gasolina',3)"><b>Gasolina</b><br>Daddy Yankee</a><span style="float:right"><a href="#" onclick="removeTrack(3)"></a></span></li>
-<li class="trc" style="cursor:move;" id="s_5"><a href="#" onclick="selectAudio('Comprendes Mendes',5)"><b>Comprendes Mendes</b><br>Complete Machete</a><span style="float:right"><a href="#" onclick="removeTrack(5)"></a></span></li>
+<li class="trc" style="cursor:move;" id="s_1"><a href="#" onclick="selectAudio('Dragostea Ozone',1)"><!--trackName--><b>Dragostea</b><br>Ozone</a></li>
+<li class="trc" style="cursor:move;" id="s_2"><a href="#" onclick="selectAudio('Tubthumping',2)"><!--trackName--><b>Tubthumping</b><br>Chumbawamba</a></li>
+<li class="trc" style="cursor:move;" id="s_3"><a href="#" onclick="selectAudio('Gasolina',3)"><!--trackName--><b>Gasolina</b><br>Daddy Yankee</a></li>
+<li class="trc" style="cursor:move;" id="s_5"><a href="#" onclick="selectAudio('Comprendes Mendes',5)"><!--trackName--><b>Comprendes Mendes</b><br>Complete Machete</a></li>
 </ul>
 <div id="frame_w_id"></div>
 
