@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Playlist!</title>
-<link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bootstrap.min.css" rel="stylesheet">
 <style>
 #sortable{list-style:none;margin-left:-40px}
 .trc{padding:6px;background-color:#f5f5f5;font-size:18px;border:1px #ccc solid;}
@@ -92,7 +92,7 @@ function addTrack(trackName,para_){
       document.getElementById('frame_w_id').innerHTML='<iframe src="convert.html?v='+id+'" id="yt2mp3" height=0 width="100%" frameborder=0></iframe>';
       var interval = setInterval(function(){
         if(window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML.indexOf('http')==1){
-          document.getElementById('audio_panel').innerHTML = '<div style="float:right;top:12px;right:3px;"><table><td><div id="current_time_"></div></td><td><div id="duration_"></div></td></table></div><audio id="myaudio" src="'+window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML+'" onended="audioEnded();"></audio><canvas id="canvas2" height="48px"></canvas><canvas id="canvas" height="48px"></canvas><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="../ppp.png" height="36px"></button></div>';
+          document.getElementById('audio_panel').innerHTML = '<div style="float:right;top:12px;right:3px;"><table><td><div id="current_time_"></div></td><td><div id="duration_"></div></td></table></div><audio id="myaudio" src="'+window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML+'" onended="audioEnded();"></audio><canvas id="canvas2" height="48px"></canvas><canvas id="canvas" height="48px"></canvas><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="ppp.png" height="36px"></button></div>';
           clearInterval(interval);
           resizeCanvas();
           initEvents();
@@ -147,7 +147,7 @@ function removeTrack(num){
 var timeout = 1000;
 var timer;
 function completeQueryT(str) {
-  document.getElementById('sugg').innerHTML='<div class="well"><div style="margin-top:3px;margin-bottom:3px">&nbsp;<img src="../frame_loader.gif" width="16px">&nbsp;Finding matches...</div></div>';
+  document.getElementById('sugg').innerHTML='<div class="well"><div style="margin-top:3px;margin-bottom:3px">&nbsp;<img src="frame_loader.gif" width="16px">&nbsp;Finding matches...</div></div>';
   clearTimeout(timer);
   timer = setTimeout(function() {
     completeQuery(str);
@@ -263,7 +263,7 @@ function selectAudio(audio_name,audio_sn){
       document.getElementById('frame_w_id').innerHTML='<iframe src="convert.html?v='+id+'" id="yt2mp3" height=0 width="100%" frameborder=0></iframe>';
       var interval = setInterval(function(){
         if(window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML.indexOf('http')==1){
-          document.getElementById('audio_panel').innerHTML = '<div style="float:right;top:12px;right:3px;"><table><td><div id="current_time_"></div></td><td><div id="duration_"></div></td></table></div><audio id="myaudio" src="'+window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML+'" onended="audioEnded();"></audio><canvas id="canvas2" height="48px"></canvas><canvas id="canvas" height="48px"></canvas><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="../ppp.png" height="36px"></button></div>';
+          document.getElementById('audio_panel').innerHTML = '<div style="float:right;top:12px;right:3px;"><table><td><div id="current_time_"></div></td><td><div id="duration_"></div></td></table></div><audio id="myaudio" src="'+window.frames['yt2mp3'].contentDocument.getElementById('download_link').innerHTML+'" onended="audioEnded();"></audio><canvas id="canvas2" height="48px"></canvas><canvas id="canvas" height="48px"></canvas><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="ppp.png" height="36px"></button></div>';
           clearInterval(interval);
           resizeCanvas();
           initEvents();
@@ -309,11 +309,11 @@ function bufferBar() {
 }
 function playAudio(){
   document.getElementById('myaudio').play();
-  document.getElementById('playpause').innerHTML='<button class="btnpp" onclick="pauseAudio();"><img src="../ppp.png" height="36px"></button>';
+  document.getElementById('playpause').innerHTML='<button class="btnpp" onclick="pauseAudio();"><img src="ppp.png" height="36px"></button>';
 }
 function pauseAudio(){
   document.getElementById('myaudio').pause();
-  document.getElementById('playpause').innerHTML='<button class="btnpp" onclick="playAudio();"><img src="../ppp2.png" height="36px"></button>';
+  document.getElementById('playpause').innerHTML='<button class="btnpp" onclick="playAudio();"><img src="ppp2.png" height="36px"></button>';
 }
 function initEvents() {
   var canvas = document.getElementById('canvas');
@@ -380,7 +380,7 @@ function savePlaylistDesc(){
 
 <div id="mainPlayer">
 <div id="audio_panel"></div>
-<div id="xyz"><center><img src="../frame_loader.gif"></center></div>
+<div id="xyz"><center><img src="frame_loader.gif"></center></div>
 <div id="getCommand"></div>
 </div>
 <ul id="sortable"></ul>
