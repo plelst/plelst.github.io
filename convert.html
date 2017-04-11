@@ -10,7 +10,7 @@ function startInterval(){
 function checkDownload(){
 	if(i==1){
 		var str = document.getElementById('download_btn').innerHTML;
-		if(str.indexOf("<span>Download</span>")!==-1){
+		if(str.indexOf('<span id="progress">Download</span>')!==-1){
 			var link = document.getElementById('download_btn').innerHTML;
 			link = link.replace('<a href="','');
 			link = link.replace('" rel="nofollow">','');
@@ -18,7 +18,7 @@ function checkDownload(){
 			link = link.replace('<b>','');
 			link = link.replace('</b>','');
 			link = link.replace('</a>','');
-			link = link.replace('<span>','');
+			link = link.replace('<span id="progress">','');
 			link = link.replace('</span>','');
 			document.getElementById('download_link').innerHTML=link;
 			i++;
@@ -28,7 +28,7 @@ function checkDownload(){
 </script>
 <div id="download_link">Converting</div>
 <div id="download_btn">
-<a href="" rel="nofollow"><b><span>Checking</span></b></a>
+<a href="" rel="nofollow"><b><span id="progress">Checking</span></b></a>
 </div>
-<script type="text/javascript" src="https://ytapi.cc/js/jquery-3.1.1.min.js"></script>
-<script type="text/javascript" src="https://ytapi.cc/js/button.js"></script>
+<script type="text/javascript" src="https://ycapi.org/js/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="https://ycapi.org/js/button.js"></script>
