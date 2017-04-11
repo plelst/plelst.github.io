@@ -66,6 +66,7 @@ $(document).ready(function(){
 });
 function initPlay(){
   var lines=$('#comprendes').val().split('\n');
+  document.getElementById('sortable').innerHTML='';
   for(var i=0;i<lines.length;i++){
     document.getElementById('sortable').innerHTML+='<li class="trc" style="cursor:pointer;" id="s_'+i+'" onclick="selectAudio(\''+lines[i]+'\','+i+')">'+lines[i]+'</li>';
   }
