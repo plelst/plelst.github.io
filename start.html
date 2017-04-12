@@ -65,11 +65,21 @@ $(document).ready(function(){
   $("#sortable").disableSelection();
 });
 function initPlay(){
+  var data='';
   var lines=$('#comprendes').val().split('\n');
   document.getElementById('sortable').innerHTML='';
   for(var i=0;i<lines.length;i++){
-    document.getElementById('sortable').innerHTML+='<li class="trc" style="cursor:pointer;" id="s_'+i+'" onclick="selectAudio(\''+lines[i]+'\','+i+')">'+lines[i]+'</li>';
+    if(lines[i]){
+      document.getElementById('sortable').innerHTML+='<li class="trc" style="cursor:pointer;" id="s_'+i+'" onclick="selectAudio(\''+lines[i]+'\','+i+')">'+lines[i]+'</li>';
+      if(i==(lines.length-1)){
+        data = data.concat(lines[i]);
+      }
+      else{
+        data = data.concat(lines[i]+'x97pes17x');
+      }
+    }
   }
+  document.getElementById('xPerma').innerHTML+='<b>Permalink:</b><br><input type="text" class="form-control" value="https://plelst.github.io/play.html?data='+data+'">';
   currTrack=0;
   firstRun();
 }
@@ -261,7 +271,7 @@ function formatTime(time){
 
 <table>
 <td><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="../ppp.png" height="48px"></button></div></td>
-<td><div id="current_time_">0:00</div></td><td><div id="duration_">0:00</div></td>
+<td><div id="current_time_">0:00</div></td><td><div id="duration_">/0:00</div></td>
 <td>&nbsp;Hung?&nbsp;<a href="#" onclick="playlistStuck();">Refresh</a></td>
 </table>
 <div style="margin-bottom:3px;"></div>
@@ -277,6 +287,8 @@ function formatTime(time){
 </div>
 
 <div class="col-md-5">
+<div style="margin-top:6px;"></div>
+<div id="xPerma"></div>
 <span style="font-size:18px;"><b>And, here goes your list of tracks!</b></span><br>
 (One track per line)
 <textarea class="form-control" name="tb" rows="9" spellcheck="false" id="comprendes" autofocus></textarea>
