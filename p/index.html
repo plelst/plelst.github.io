@@ -12,6 +12,7 @@ body{font-family:courier;}
 .trc_{padding:6px;color:#fff;background-color:#0099cc;font-size:15px;border:1px #ccc solid;}
 .currPlayli{font-weight:bold;background-color:#337ab7;color:#fff;}
 .playPauseButton{font-size:36px;border:0px;background-color:transparent;color:#337ab7;}
+#pname{display:none;}
 #progress-bar{-webkit-appearance:none;width:100%;cursor:pointer;}
 #progress-bar::-webkit-slider-runnable-track{height:12px;background:#ddd;border:none;border-radius:3px;}
 #progress-bar::-webkit-slider-thumb{-webkit-appearance:none;border:none;height:18px;width:12px;background:#0099cc;margin-top:-3px;}
@@ -70,10 +71,15 @@ function sortAndSelect(){
     var url = $(location).attr('href');
     var str1 = url.indexOf('?data=');
     var data = atob(url.substr(str1+delim1.length,url.length-str1-delim1.length));
+    var str2 = data.indexOf('&pn=');
+    var pname = data.substr(str2+4,data.length-str2-4);
+    document.getElementById('pname').innerHTML='<h3><b>'+pname+'</b></h3><div id="ppfad"><center><button class="btn" onclick="playAudio();"><img src="pl2.png"></button></center></div>';
+    data = data.substr(0,str2);
     var lines = data.split('x97pes17x');
     document.getElementById('sortable').innerHTML='';
     for(var i=0;i<lines.length;i++){
-      document.getElementById('sortable').innerHTML+='<li class="trc" style="cursor:pointer;" id="s_'+i+'" onclick="selectAudio(\''+decodeURIComponent(lines[i])+'\','+i+')">'+decodeURIComponent(lines[i])+'</li>';
+      var pop=i+1;
+      document.getElementById('sortable').innerHTML+='<li class="trc" style="cursor:pointer;" id="s_'+i+'" onclick="selectAudio(\''+decodeURIComponent(lines[i])+'\','+i+')"><table><td width="24px">'+pop+'</td><td><!--trackName-->'+decodeURIComponent(lines[i])+'<!--trackNameEnds--></td></table></li>';
     }
   }
   firstRun();
@@ -81,12 +87,16 @@ function sortAndSelect(){
 function firstRun(){
   var temp;
   var commento = '<!--trackName-->';
+  var commentos = '<!--trackNameEnds-->';
   var listo = document.getElementById("sortable").getElementsByTagName("li");
   for(var j=0;j<listo.length;j++){
     document.getElementById(listo[j].id).className="trc";
   }
   document.getElementById('s_'+currTrack).className="trc_";
   temp = document.getElementById('s_'+currTrack).innerHTML;//.replace('<b>','').replace('</b>','')
+  var start = temp.indexOf(commento);
+  var end = temp.indexOf(commentos);
+  temp = temp.substr(start+commento.length,end-start-commento.length);
   //temp = temp.replace('<br>',' ');
   //var start_pt = temp.indexOf('<!--trackName-->');
   //var end_pt = temp.indexOf("</a>");
@@ -97,12 +107,16 @@ function firstRun(){
 function playlistStuck(){
   var temp;
   var commento = '<!--trackName-->';
+  var commentos = '<!--trackNameEnds-->';
   var listo = document.getElementById("sortable").getElementsByTagName("li");
   for(var j=0;j<listo.length;j++){
     document.getElementById(listo[j].id).className="trc";
   }
   document.getElementById('s_'+currTrack).className="trc_";
   temp = document.getElementById('s_'+currTrack).innerHTML;//.replace('<b>','').replace('</b>','')
+  var start = temp.indexOf(commento);
+  var end = temp.indexOf(commentos);
+  temp = temp.substr(start+commento.length,end-start-commento.length);
   //temp = temp.replace('<br>',' ');
   //var start_pt = temp.indexOf('<!--trackName-->');
   //var end_pt = temp.indexOf("</a>");
@@ -114,6 +128,7 @@ var zxcv=1;
 function audioEnded(){
   var temp;
   var commento = '<!--trackName-->';
+  var commentos = '<!--trackNameEnds-->';
   var listo = document.getElementById("sortable").getElementsByTagName("li");
   if(zxcv==1){
     for(var j=0;j<listo.length;j++){
@@ -129,6 +144,9 @@ function audioEnded(){
   }
   document.getElementById('s_'+currTrack).className="trc_";
   temp = document.getElementById('s_'+currTrack).innerHTML;//.replace('<b>','').replace('</b>','')
+  var start = temp.indexOf(commento);
+  var end = temp.indexOf(commentos);
+  temp = temp.substr(start+commento.length,end-start-commento.length);
   //temp = temp.replace('<br>',' ');
   //var start_pt = temp.indexOf('<!--trackName-->');
   //var end_pt = temp.indexOf("</a>");
@@ -180,6 +198,7 @@ function selectAudio(audio_name,audio_sn){
     }
   },100);
   initEvents();
+  document.getElementById('pname').style.display='block';
   //player.setAttribute('src', urlsrc);
   /*
   var interval3 = setInterval(function(){
@@ -251,39 +270,54 @@ function formatTime(time){
 </script>
 </head>
 <body onload="sortAndSelect();">
-
-<div id="everythingHere">
-
+<div style="background-color:#0099cc;color:#fff;position:fixed;top:0;width:100%;z-index:999;">
+<div class="container">
+<div class="row">
 <div class="col-lg-12">
+<span style="font-size:27px"><b>--//plelst</b></span><br>
+Easiest way to create, embed and share playlists!
+</div>
+</div>
+</div>
+</div>
+
+<div id="mMargin"><div style="margin-top:78px"></div></div>
+
+<div id="everythingHere"><div class="container"><div class="row">
+
+<div class="col-md-3">
+<div id="pname"></div>
+</div>
+
+<div class="col-md-6">
+
+<div id="mainPlayer">
+<div style="margin-bottom:3px;"></div>
+<div id="xyz"><center><img src="../frame_loader.gif"></center></div>
+<div id="getCommand"></div>
+</div>
+<audio id="myaudio" src="" onended="audioEnded();"></audio>
+<ul id="sortable">
+
+</ul>
+<div id="frame_w_id"></div>
+<div style="margin-bottom:54px"></div>
 
 </div>
 
-<div class="col-md-1"></div>
+</div></div>
 
-<div class="col-md-5">
-
-<div id="mainPlayer">
-
+<div style="background-color:#fff;position:fixed;bottom:0;width:100%;z-index:999;">
+<div class="container">
+<div class="row">
+<div class="col-md-3"></div>
+<div class="col-md-6">
 <table>
 <td><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="../ppp.png" height="48px"></button></div></td>
 <td><div id="current_time_">0:00</div></td><td><div id="duration_">/0:00</div></td>
 <td>&nbsp;Hung?&nbsp;<a href="#" onclick="playlistStuck();">Refresh</a></td>
 </table>
-<div style="margin-bottom:3px;"></div>
-<div id="xyz"><center><img src="../frame_loader.gif"></center></div>
-<div id="getCommand"></div>
-</div>
-<audio id="myaudio" src="" onended="audioEnded();" autoplay></audio>
-<ul id="sortable">
-
-</ul>
-<div id="frame_w_id"></div>
-
-</div>
-
-<div class="col-md-5">
-
-</div>
+</div></div>
 
 </div>
 </body>
