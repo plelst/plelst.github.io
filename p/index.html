@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Playlist!</title>
+<title>--//plelst</title>
 <link href="../css/bootstrap.min.css" rel="stylesheet">
 <style>
 body{font-family:courier;}
@@ -64,18 +64,24 @@ $(document).ready(function(){
   });
   $("#sortable").disableSelection();
 });
-function sortAndSelect(){
-  if($(location).attr('href').indexOf('?data=')!==-1){
-    var delim1 = '?data=';
-    var url = $(location).attr('href');
-    var str1 = url.indexOf('?data=');
-    var data = atob(url.substr(str1+delim1.length,url.length-str1-delim1.length));
-    var lines = data.split('x97pes17x');
-    document.getElementById('sortable').innerHTML='';
-    for(var i=0;i<lines.length;i++){
-      document.getElementById('sortable').innerHTML+='<li class="trc" style="cursor:pointer;" id="s_'+i+'" onclick="selectAudio(\''+decodeURIComponent(lines[i])+'\','+i+')">'+decodeURIComponent(lines[i])+'</li>';
+function initPlay(){
+  var data='';
+  var lines=$('#comprendes').val().split('\n');
+  document.getElementById('sortable').innerHTML='';
+  for(var i=0;i<lines.length;i++){
+    if(lines[i]){
+      document.getElementById('sortable').innerHTML+='<li class="trc" style="cursor:pointer;" id="s_'+i+'" onclick="selectAudio(\''+lines[i]+'\','+i+')">'+lines[i]+'</li>';
+      if(i==(lines.length-1)){
+        data=data.concat(lines[i]);
+      }
+      else{
+        data=data.concat(lines[i]+'x97pes17x');
+      }
     }
   }
+  data=data.concat('&pn='+document.getElementById('playlistTitle').value);
+  document.getElementById('xPerma').innerHTML='<b>Permalink:</b><br><input type="text" class="form-control" value="https://plelst.github.io/play.html?data='+btoa(data)+'"><br>';
+  currTrack=0;
   firstRun();
 }
 function firstRun(){
@@ -250,20 +256,30 @@ function formatTime(time){
 }
 </script>
 </head>
-<body onload="sortAndSelect();">
+<body>
 
 <div id="everythingHere">
 
+<div style="background-color:#00bd9b;color:#fff">
+<div class="container">
+<div class="row">
+<div class="col-lg-12">
+<h2><b>--//plelst</b></h2>
+Easiest way to create, embed and share playlists!
+</div>
+</div>
+</div>
+</div>
+<br>
+
+<div class="container"><div class="row">
 <div class="col-lg-12">
 
 </div>
 
-<div class="col-md-1"></div>
-
-<div class="col-md-5">
+<div class="col-md-6">
 
 <div id="mainPlayer">
-
 <table>
 <td><div id="playpause"><button onclick="pauseAudio();" class="btnpp"><img src="../ppp.png" height="48px"></button></div></td>
 <td><div id="current_time_">0:00</div></td><td><div id="duration_">/0:00</div></td>
@@ -274,17 +290,22 @@ function formatTime(time){
 <div id="getCommand"></div>
 </div>
 <audio id="myaudio" src="" onended="audioEnded();" autoplay></audio>
-<ul id="sortable">
-
-</ul>
+<ul id="sortable"></ul>
 <div id="frame_w_id"></div>
 
 </div>
 
-<div class="col-md-5">
-
+<div class="col-md-6">
+<div style="margin-top:6px;"></div>
+<div id="xPerma"></div>
+<span style="font-size:18px;"><b>And, here goes your list of tracks!</b></span><br>
+(One track per line)
+<textarea class="form-control" name="tb" rows="9" spellcheck="false" id="comprendes" autofocus></textarea>
+<br><input type="text" class="form-control" id="playlistTitle" spellcheck="false">
+<button class="btn btn-primary" onclick="initPlay();"><b>Create!</b></button>
 </div>
 
+</div></div>
 </div>
 </body>
 </html>
