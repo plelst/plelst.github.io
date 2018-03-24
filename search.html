@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script src="playlist/touch-event.js"></script>
+<style type="text/css">
+body{background-color:#337ab7;}
+hr{border-top:1px solid #eee;margin-top:3px;margin-bottom:3px;}
+.rthumb{border-radius:50%;width:30px;height:30px;}
+.atitle{font-size:16px;font-weight:bold;color:#fff;}.atitle:hover{text-decoration:underline;color:#fff;}
+.atitle_t{font-size:16px;font-weight:bold;color:#fff;}.atitle_t:hover{text-decoration:none;background-color:#000055;color:#fff;padding:6px;}
+.atitle_t:hover:nth-child(n) .glyphicon{font-size:21px;-webkit-transition:0.6s ease-out;-moz-transition:0.6s ease-out;transition:0.6s ease-out;-webkit-transform:rotateZ(360deg);-moz-transform:rotateZ(360deg);transform:rotateZ(360deg);}
+.form-control{font-size:21px;border:0px;border-radius:0px;background-color:transparent;color:#fff;}.form-control:focus{border:0px;}
+.form-control::-webkit-input-placeholder{color:#fff;}
+#video-placeholder{display:none;}
+#track{font-size:30px;color:#fff;font-weight:bold;}
+#artist{font-size:21px;color:#fff;font-weight:bold;}
+#progress-bar{-webkit-appearance:none;width:100%;cursor:pointer;}
+#progress-bar::-webkit-slider-runnable-track{height:6px;background:#fff;border:none;border-radius:3px;}
+#progress-bar::-webkit-slider-thumb{-webkit-appearance:none;border:none;height:12px;width:6px;background:#fff;margin-top:-3px;}
+#progress-bar:focus{outline:none;}
+#progress-bar:focus::-webkit-slider-runnable-track{background:#ccc;}
+#current-time,#duration{font-size:21px;font-weight:bold;color:#fff;}
+#trackName{font-size:21px;font-weight:bold;color:#fff;}
+.playPause_a{font-size:36px;color:#fff;}
+.playPause_a:hover{color:#000055;}
+._0_radius{border-radius:0px;}
+#tracksContainer{display:none;background:rgba(255,255,255,0.3);padding:12px;}
+.removeTrack{display:none;float:right;color:#fff;cursor:pointer;font-weight:bold;font-size:19px;}
+#sortable{list-style:none;margin-left:-24px;}
+#sortable li{padding-left:6px;cursor:move;}
+#sortable li a{font-size:18px;color:#fff;font-weight:bold;cursor:pointer;}
+#sortable li:hover:nth-child(n) .removeTrack{display:block;}
+.activeTrack{background:rgba(255,255,255,0.3);}
+</style>
+<script type="text/javascript">
+// GLOBAL VARS
+var player;
+var youtubePlayerIsReady=0;
+var currentTrackKey=0;
+var time_update_interval=0;
+var firstSongAdded=0; // Flag
+var newTrackNotQueued=1; // Negative Flag 0->Yes, 1->No
+
+// [0] => Selected Track
+// [1-9] => Similar Tracks
+// If a track is added to queue, then remove all tracks from [currentTrackKey+1] to [length-1],
+// and add the new track at location [currentTrackKey+1]. Now playlist.length=currentTrackKey+1
+// var playlist = [];
+
+$(function() {
+	$("#sortable").sortable();
+	$("#sortable").disableSelection();
+});
+$(document).ready(function(){
+	$("#sortable").sortable({
+		stop : function(event, ui){
+			sets = $(this).sortable('serialize');
+			sets = sets.substr(4,sets.length-4);
+			sets = sets.split("&s[]=");
+		}
+	});
+	$("#sortable").disableSelection();
+});
+
+//Initializing the Youtube Player
+function onYouTubeIframeAPIReady(){player=new YT.Player('video-placeholder',{width:1,height:1,videoId:'',playerVars:{color:'white',autoplay:0,vq:'tiny'},events:{onReady:youtubePlayerIsReady=1}});}
+
+function firstCharacterToUpper(str){
+	var lower=str.toLowerCase();
+	return lower.replace(/(^| )(\w)/g,function(result){
+		return result.toUpperCase();
+	});
+}
+
+function search(query){
+	if(query){
+		if(firstSongAdded){
+			document.getElementById('field').placeholder='Add more songs';
+			firstSongAdded=0;
+		}
+		$.getJSON("http://ws.audioscrobbler.com/2.0/?method=track.search&track="+query+"&api_key=0017041e90dd503219cd302cac55510a&limit=9&format=json",function(result){
+			document.getElementById('tracksContainer').style.display='block';
+			document.getElementById('tracks').innerHTML='';
+			var i=0;while(result.results.trackmatches.track[i].name){
+				$('#tracks').append('<a class="atitle_t" href="#" onclick="selectTrack(\''+result.results.trackmatches.track[i].name.replace(/\'/g,"`").replace(/\?/g,"")+' &mdash; '+result.results.trackmatches.track[i].artist.replace(/\'/g,"`").replace(/\?/g,"")+'\',\''+result.results.trackmatches.track[i].mbid+'\');"><i class="glyphicon glyphicon-plus"></i>&nbsp;'+result.results.trackmatches.track[i].name+'<span style="font-size:15px;">&nbsp;&mdash;&nbsp;'+result.results.trackmatches.track[i].artist+'</span></a><hr>');i++;
+			}
+			$('#tracks').append('<a class="atitle_t" href="#" onclick="selectTrack(\''+firstCharacterToUpper(query)+'\',\'\');"><i class="glyphicon glyphicon-plus"></i>&nbsp;'+firstCharacterToUpper(query)+'</a><hr>');
+		});
+		$.getJSON("http://ws.audioscrobbler.com/2.0/?method=album.search&album="+query+"&api_key=0017041e90dd503219cd302cac55510a&limit=5&format=json",function(result){
+			document.getElementById('albums').innerHTML='';
+			var addHeader=1; // Flag for inserting header
+			var i=0;while(result.results.albummatches.album[i].name){
+				var img;
+				if(result.results.albummatches.album[i].image[0]['#text'])
+					img=result.results.albummatches.album[i].image[0]['#text'];
+				else
+					img='album_icon.png';
+				if(result.results.albummatches.album[i].mbid){if(addHeader){$('#albums').append('<div style="margin-top:6px;"></div><span style="font-size:16px;background-color:#333;color:#fff;padding:4px;font-weight:bold;">Albums</span><div style="margin-top:6px;"></div><hr>');addHeader=0;}$('#albums').append('<a class="atitle" onclick="selectAlbum(\''+result.results.albummatches.album[i].mbid+'\');" href="#"><img class="rthumb" src="'+img+'">&nbsp;'+result.results.albummatches.album[i].name+'&nbsp;&mdash;&nbsp;'+result.results.albummatches.album[i].artist+'</a><hr>');}i++;
+			}
+		});
+		$.getJSON("http://ws.audioscrobbler.com/2.0/?method=artist.search&artist="+query+"&api_key=0017041e90dd503219cd302cac55510a&limit=5&format=json",function(result){
+			document.getElementById('artists').innerHTML='';
+			var addHeader=1; // Flag for inserting header
+			var i=0;while(result.results.artistmatches.artist[i].name){
+				var img;
+				if(result.results.artistmatches.artist[i].image[0]['#text'])
+					img=result.results.artistmatches.artist[i].image[0]['#text'];
+				else
+					img='artist_icon.png';
+				if(result.results.artistmatches.artist[i].mbid){if(addHeader){$('#artists').append('<div style="margin-top:6px;"></div><span style="font-size:16px;background-color:#333;color:#fff;padding:4px;font-weight:bold;">Artists</span><div style="margin-top:6px;"></div><hr>');addHeader=0;}$('#artists').append('<a class="atitle" href=""><img class="rthumb" src="'+img+'">&nbsp;'+result.results.artistmatches.artist[i].name+'</a><hr>');}i++;
+			}
+		});
+	}else{
+		document.getElementById('artists').innerHTML='';
+		document.getElementById('albums').innerHTML='';
+		document.getElementById('tracks').innerHTML='';
+		document.getElementById('tracksContainer').style.display='none';
+	}
+}
+
+function selectAlbum(mbid){
+	document.getElementById('artists').innerHTML='';
+	document.getElementById('albums').innerHTML='';
+	document.getElementById('tracks').innerHTML='';
+	$.getJSON("http://ws.audioscrobbler.com/2.0/?method=album.getinfo&mbid="+mbid+"&api_key=0017041e90dd503219cd302cac55510a&limit=100&format=json",function(result){
+		var parentWindow=document.getElementById('tracks');
+		parentWindow.innerHTML+='<h3 style="font-weight:bold;color:#fff;margin-top:0px;margin-bottom:9px;">'+result.album.name+'&nbsp;<span style="font-size:21px;"><a href="#" onclick="playAll();"><i class="glyphicon glyphicon-play"></i>&nbsp;Play All</a></span></h3>';
+		parentWindow.innerHTML+='<span style="float:right;"><img width="120px" src="'+result.album.image[2]['#text']+'"></span>';
+		parentWindow.innerHTML+='<span style="font-size:15px;color:#fff;">'+result.album.wiki.summary.replace('Read more on Last.fm','')+'</span><div style="margin-bottom:9px;"></div>';
+		var i=0;while(result.album.tracks.track[i].name){
+			parentWindow.innerHTML+='<a class="atitle_t" href="#" onclick="selectTrack(\''+result.album.tracks.track[i].name.replace(/\'/g,"`").replace(/\?/g,"")+' &mdash; '+result.album.artist.replace(/\'/g,"`").replace(/\?/g,"")+'\',\'\');"><i class="glyphicon glyphicon-plus"></i> '+result.album.tracks.track[i].name+'<span style="font-size:15px;"> &mdash; '+result.album.artist+'</span></a><div style="margin-bottom:3px;"></div>';
+			i++;
+		}
+	});
+}
+
+function playAll(){
+	var tracksContainer=document.getElementById('tracks').getElementsByClassName('atitle_t');
+	var tracksList=document.getElementById('sortable').getElementsByTagName('li');
+	var query=tracksContainer[tracksList.length].innerHTML.replace(/\'/g,"`").replace(/\?/g,"").replace('<i class="glyphicon glyphicon-plus"></i> ','').replace('<span style="font-size:15px;">','').replace('</span>','');
+	/* THIS CODE IS FROM THE FUNCTION: selectTrack(); */
+	if(query.indexOf(' — ')!=-1){
+		query=query.split(' — ');
+		var trackName=query[0]+' — '+'<span style="font-size:15px">'+query[1]+'</span>';
+		query=query[0]+' '+query[1];
+		query=query+' audio';
+	}else{
+		var trackName=query;
+		query=query+' audio';
+	}
+	if(!tracksList[0]){ // Empty
+		alert(tracksList.length+1+' - '+tracksContainer.length+' -> '+query);
+		document.getElementById('sortable').innerHTML+='<li class="activeTrack"><span class="removeTrack" title="Remove Track" onclick="removeTrack(this);">X&nbsp;</span><i class="glyphicon glyphicon-sort" style="color:#000055;"></i>&nbsp;<a onclick="playTrack(this);" href="#">'+trackName+'</a></li>';
+		if(youtubePlayerIsReady){
+			$.getJSON("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+query+"&key=AIzaSyDl1Tb2O9pGblvvjiLv7JOfITpoQeS9daQ&maxResults=1&type=video&videoCategoryId=10",function(result){
+				player.cueVideoById(result.items[0].id.videoId);
+				firstSongAdded=1;
+				play();
+				update();
+				if((tracksList.length+1)!=(tracksContainer.length)){
+					playAll();
+				}
+			});
+		}else{
+			// If YouTube Frame API isn't loaded yet! (For a slow internet connection)
+			alert('Wait for a while and select you track again!');
+		}
+	}else{
+		document.getElementById('sortable').innerHTML+='<li><span class="removeTrack" title="Remove Track" onclick="removeTrack(this);">X&nbsp;</span><i class="glyphicon glyphicon-sort" style="color:#000055;"></i>&nbsp;<a onclick="playTrack(this);" href="#">'+trackName+'</a></li>';
+	}
+	/* END */
+}
+
+function selectTrack(query,mbid){
+	if(query.indexOf(' — ')!=-1){
+		query=query.split(' — ');
+		var trackName=query[0]+' — '+'<span style="font-size:15px">'+query[1]+'</span>';
+		query=query[0]+' '+query[1];
+		query=query+' audio';
+	}else{
+		var trackName=query;
+		query=query+' audio';
+	}
+
+	// Check if the current playlist is empty or not
+	// If empty, then add and play the track
+	// If not empty, then just add the track in the queue
+	var trackList=document.getElementById("sortable").getElementsByTagName("li");
+	if(!trackList[0]){ // Empty
+		if(youtubePlayerIsReady){
+			$.getJSON("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+query+"&key=AIzaSyDl1Tb2O9pGblvvjiLv7JOfITpoQeS9daQ&maxResults=1&type=video&videoCategoryId=10",function(result){
+				document.getElementById('sortable').innerHTML+='<li class="activeTrack"><span class="removeTrack" title="Remove Track" onclick="removeTrack(this);">X&nbsp;</span><i class="glyphicon glyphicon-sort" style="color:#000055;"></i>&nbsp;<a onclick="playTrack(this);" href="#">'+trackName+'</a></li>';
+				player.cueVideoById(result.items[0].id.videoId);
+				firstSongAdded=1;
+				play();
+				update();
+			});
+		}else{
+			// If YouTube Frame API isn't loaded yet! (For a slow internet connection)
+			alert('Wait for a while and select you track again!');
+		}
+	}else{
+		document.getElementById('sortable').innerHTML+='<li><span class="removeTrack" title="Remove Track" onclick="removeTrack(this);">X&nbsp;</span><i class="glyphicon glyphicon-sort" style="color:#000055;"></i>&nbsp;<a onclick="playTrack(this);" href="#">'+trackName+'</a></li>';
+	}
+}
+
+function playTrack(node){
+	var query=node.innerHTML.replace(' — ',' ').replace('<span style="font-size:15px">','').replace('</span>','')+' audio';
+	var trackList=document.getElementById("sortable").getElementsByTagName("li");
+    for(var i=0;i<trackList.length;i++)
+    	trackList[i].className='';
+    node.parentNode.className='activeTrack';
+	$.getJSON("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+query+"&key=AIzaSyDl1Tb2O9pGblvvjiLv7JOfITpoQeS9daQ&maxResults=1&type=video&videoCategoryId=10",function(result){
+		player.cueVideoById(result.items[0].id.videoId);
+		play();
+		update();
+	});
+}
+
+function checkIfEnded(){
+    if(player.getCurrentTime()==player.getDuration()){
+    	if(player.getCurrentTime()>10){ // To make sure that both the values are not equal to 0. 10 is randomly chosen.
+    		if(newTrackNotQueued){
+    			newTrackNotQueued=0; // New Track has been queued
+				var trackList=document.getElementById("sortable").getElementsByTagName("li");
+				var nextTrackKey;
+    			for(var i=0;i<trackList.length;i++){
+    				if(trackList[i].className=='activeTrack')
+						nextTrackKey=trackList.length==(i+1)?0:i+1;
+    				trackList[i].className='';
+    			}
+    			trackList[nextTrackKey].className='activeTrack';
+    			var query=trackList[nextTrackKey].getElementsByTagName('a')[0].innerHTML.replace(' — ',' ').replace('<span style="font-size:15px">','').replace('</span>','')+' audio';
+    			$.getJSON("https://www.googleapis.com/youtube/v3/search?part=snippet&q="+query+"&key=AIzaSyDl1Tb2O9pGblvvjiLv7JOfITpoQeS9daQ&maxResults=1&type=video&videoCategoryId=10",function(result){
+					player.cueVideoById(result.items[0].id.videoId);
+					play();
+					newTrackNotQueued=1; // Open door for other tracks once the current track has started playing
+					update();
+				});
+			}
+    	}
+    }
+}
+
+function removeTrack(element){
+	var parent=document.getElementById('sortable');
+	var trackList=parent.getElementsByTagName("li");
+	var currentTrackRemoved=0;
+	for(var i=0;i<trackList.length;i++){
+		if(trackList[i].className=='activeTrack')
+			if(trackList[i]==element.parentNode)
+				currentTrackRemoved=1;
+	}
+	parent.removeChild(element.parentNode);
+	if(!trackList[0]){
+		player.stopVideo();
+		player.cueVideoById('');
+	}else if(currentTrackRemoved){
+		//playTrack(trackList[0]);
+		player.stopVideo();
+		player.cueVideoById('');
+	}
+}
+
+function update(){
+	updateTimerDisplay();
+	updateProgressBar();
+	checkIfEnded();
+	clearInterval(time_update_interval);
+	time_update_interval=setInterval(function(){
+		updateTimerDisplay();
+		updateProgressBar();
+		checkIfEnded();
+	},1000);
+}
+</script>
+</head>
+
+<body>
+<div class="container">
+<div class="row">
+<div class="col-md-6">
+<table><td><img src="mj_play.png"></td><td><div id="playPause"><a href="#" class="playPause_a" onclick="pause();"><i class="glyphicon glyphicon-pause"></i></a></div></td><td width="100%" style="vertical-align:top;"><span id="current-time">0:00</span><span style="float:right;"><span id="duration">0:00</span></span>
+<input type="range" id="progress-bar" value="0"></td></table>
+<div id="video-placeholder"></div>
+<ul id="sortable"></ul>
+</div>
+<div class="col-md-6">
+<input type="text" id="field" class="form-control" onkeyup="search(this.value);" spellcheck="false" placeholder="Start searching songs here" autofocus>
+<hr style="margin:0px;border-top:3px solid #fff;">
+<div style="margin-bottom:6px;"></div>
+<div id="tracksContainer">
+<div id="tracks"></div>
+<div id="albums"></div>
+<div id="artists"></div>
+</div>
+</div>
+</div>
+</div>
+</body>
+<script type="text/javascript">
+function pause(){player.pauseVideo();document.getElementById('playPause').innerHTML='<a href="#" class="playPause_a" onclick="play();"><i class="glyphicon glyphicon-play"></i></a>';}
+function play(){player.playVideo();document.getElementById('playPause').innerHTML='<a href="#" class="playPause_a" onclick="pause();"><i class="glyphicon glyphicon-pause"></i></a>';}
+function updateTimerDisplay(){$('#current-time').text(formatTime(player.getCurrentTime()));$('#duration').text(formatTime(player.getDuration()));}
+function updateProgressBar(){$('#progress-bar').val((player.getCurrentTime()/player.getDuration())*100);}
+$('#progress-bar').on('mouseup touchend',function(e){var newTime=player.getDuration()*(e.target.value/100);player.seekTo(newTime);});
+function formatTime(time){time=Math.round(time);var minutes=Math.floor(time/60),seconds=time-minutes*60;seconds=seconds<10?'0'+seconds:seconds;return minutes+":"+seconds;}
+</script>
+</html>
